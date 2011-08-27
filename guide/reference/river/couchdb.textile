@@ -69,3 +69,20 @@ p. Here is an example setting that adds `field1` with value `value1` to all docs
     }
 }
 </pre>
+
+h1. Ignoring Attachements
+
+p. Since Elastic Search 0.18.x, you can ignore attachements as provided by couchDb for each document (@_attachments@ field).
+
+p. Here is an example setting that disable `attachements` for all docs:
+
+<pre class="prettyprint lang-js">
+{
+  "type":"couchdb",
+  "couchdb": {
+    "ignoreAttachements":true
+  }
+}
+</pre>
+
+p. Note, by default, attachements are not ignored (*false*)
