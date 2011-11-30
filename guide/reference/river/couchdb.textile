@@ -100,3 +100,131 @@ To use HTTPS, pass the @protocol@ field. Most likely, you will also have to chan
     }
 }
 </pre>
+
+h1. CouchDB views (since 0.19.x)
+
+h2. User guide
+
+You can fetch content from CouchDB views instead of getting documents.
+
+As views return a collection of results (aka rows), ElasticSearch will index each row with an id like DOCID_seq where seq is the sequence number of each row.
+If you get back 3 rows for one single change for document with ID=1234, the river will index 3 documents :
+
+* 1234_1
+* 1234_2
+* 1234_3
+
+Here is a way to define your river :
+
+<pre class="prettyprint">
+curl -XPUT 'localhost:9200/_river/my_db/_meta' -d '{
+  "type":"couchdb",
+  "couchdb": {
+    "host":"localhost",
+    "port":"5984",
+    "db":"my_db",
+    "view":"myviews/_view/myview",
+    "viewIgnoreRemove":false
+  }
+}'
+</pre>
+
+Parameters are :
+* @view@ : if not null, couchDB river will not fetch content from _changes API but only IDs and then will use the view to retrieve rows using the ID as a key. By default : null
+* @viewIgnoreRemove@ : ask the river to ignore removal of rows if there is less rows after a document update. By default : false so non existing rows will be removed from elastic search.
+
+For example, with the 3 rows described earlier, if you push a new version of the document 1234 in couchDB with only 2 docs :
+
+* If @viewIgnoreRemove@ is @false@ (default), then
+** 1234_1 will be updated
+** 1234_2 will be updated
+** 1234_3 will be removed
+
+* If @viewIgnoreRemove@ is @true@, then
+** 1234_1 will be updated
+** 1234_2 will be updated
+** 1234_3 will not be updated
+
+h2. Curl recreation
+
+We will consider that CouchDB is running and listening on localhost:5984 and Elasticsearch running on localhost:9200.
+
+First, we create a mydb NoSQL DB on CouchDB :
+
+<pre class="prettyprint">
+$ curl -XDELETE http://localhost:5984/mydb
+
+$ curl -XPUT http://localhost:5984/mydb
+</pre>
+
+First, we push 2 new documents (IDs 1 and 2) :
+
+<pre class="prettyprint">
+$ curl -XPUT http://localhost:5984/mydb/1 -d '{
+   "myarray": [ 
+     { "myfieldnum": 1, "myfieldstring": "one" }, 
+     { "myfieldnum": 2, "myfieldstring": "two" },
+     { "myfieldnum": 3, "myfieldstring": "three" }
+  ]
+}'
+
+$ curl -XPUT http://localhost:5984/mydb/2 -d '{
+   "myarray": [
+           "myfieldnum": 4,
+           "myfieldstring": "four"
+       }
+   ]
+}'
+</pre>
+
+We define our view :
+
+<pre class="prettyprint">
+$ curl -XPOST http://localhost:5984/mydb/_design/myview -d '{
+  "_id" : "_design/myviews",
+  "views" : {
+    "myview" : {
+      "map": "function(doc) { list=doc.myarray; for(var i=0; i<list.length;i++) { var elt = { \"docid\" : doc._id, \"num\" : list[i].myfieldnum, \"text\" : list[i].myfieldstring }; elt = JSON.stringify( elt ); emit(doc._id, eval(\"(\"+elt+\")\") ); }; }"
+   }
+  }
+}'
+</pre>
+
+It's time to create our river in ElasticSearch :
+
+<pre class="prettyprint">
+$ curl -XDELETE 'localhost:9200/my_db'
+
+$ curl -XPUT 'localhost:9200/my_db'
+
+$ curl -XPUT 'localhost:9200/_river/my_db/_meta' -d '{
+  "type":"couchdb",
+  "couchdb": {
+    "host":"localhost",
+    "port":"5984",
+    "db":"my_db",
+    "view":"myviews/_view/myview",
+    "viewIgnoreRemove":false
+  }
+}'
+</pre>
+
+You should have now 4 documents in your ElasticSearch index : 1_1, 1_2, 1_3 and 2_1.
+
+If you modify the document 1 by sending :
+
+<pre class="prettyprint lang-js">
+{
+   "myarray": [
+       {
+           "myfieldnum": 1,
+           "myfieldstring": "one"
+       }, {
+           "myfieldnum": 3,
+           "myfieldstring": "three"
+       }
+   ]
+}
+</pre>
+
+You should have 3 documents in your ElasticSearch index : 1_1, 1_2 and 2_1.
