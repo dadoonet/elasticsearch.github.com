@@ -100,3 +100,45 @@ To use HTTPS, pass the @protocol@ field. Most likely, you will also have to chan
     }
 }
 </pre>
+
+
+h1. Indexing attachments
+
+If you have sent attachments to CouchDB, they will be indexed.
+
+Let's create a new CouchDB database and send a document with its attachment:
+
+<pre class="prettyprint">
+$ curl -X DELETE http://127.0.0.1:5984/my_db
+{"error":"not_found","reason":"missing"}
+$ curl -X PUT http://127.0.0.1:5984/my_db
+{"ok":true}
+$ curl -X PUT http://127.0.0.1:5984/my_db/doc1 -d '{"title":"just a property"}'
+{"ok":true,"id":"doc1","rev":"1-9d98f843da363df29619b1cc24747cd6"}
+$ curl -X PUT http://127.0.0.1:5984/my_db/doc1/myfile.pdf?rev=1-9d98f843da363df29619b1cc24747cd6 --data-binary @myfile.pdf -H "Content-Type: application/pdf"
+{"ok":true,"id":"doc1","rev":"2-9b2136bcc1630b38b60ddf2269052a7b"}
+</pre>
+
+If you start the river with @ignoreAttachements@ field set to false (default), your attachments will be searchable as well.
+
+Attachments are put in @_attachments@ field which is created by default when starting the river on a new index.
+So if you want to define your own mapping for your type, you have to define the @_attachments@ field:
+<pre class="prettyprint">
+$ curl -X PUT http://127.0.0.1:9200/my_db/my_db/_mapping -d '{
+  "my_db": {
+    "properties": {
+      "_attachments": {
+        "properties": {
+          "attachment": {
+            "type": "attachment"
+          }
+        }
+      },
+      "yourfield" : {
+        "type": "string"
+      }
+    }
+  }
+}'
+</pre>
+
