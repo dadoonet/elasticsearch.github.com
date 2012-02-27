@@ -88,4 +88,4 @@ h2. Misc Plugins
 * "ElasticSearch Mock Solr Plugin":https://github.com/mattweber/elasticsearch-mocksolrplugin (by Matt Weber)
 * "Suggester Plugin":https://github.com/spinscale/elasticsearch-suggest-plugin (by Alexander Reelsen)
 * "ElasticSearch PartialUpdate Plugin":https://github.com/medcl/elasticsearch-partialupdate (by Medcl)
-
+* "ElasticSearch Changes Plugin":https://github.com/derryx/elasticsearch-changes-plugin (by Thomas Peuss)
