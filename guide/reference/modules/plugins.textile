@@ -99,4 +99,5 @@ h2. Misc Plugins
 * "Suggester Plugin":https://github.com/spinscale/elasticsearch-suggest-plugin (by Alexander Reelsen)
 * "ElasticSearch PartialUpdate Plugin":https://github.com/medcl/elasticsearch-partialupdate (by Medcl)
 * "ZooKeeper Discovery Plugin":https://github.com/sonian/elasticsearch-zookeeper (by Sonian Inc.)
+* "ElasticSearch Changes Plugin":https://github.com/derryx/elasticsearch-changes-plugin (by Thomas Peuss)
 
