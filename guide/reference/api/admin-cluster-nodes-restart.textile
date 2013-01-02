@@ -1,0 +1,40 @@
+---
+layout: guide
+title: Nodes Restart API
+cat: guide
+sidebar: reference_api
+---
+
+p. The nodes restart API allows to restart one or more (or all) nodes in the cluster. Here is an example of restarting the @_local@ node the request is directed to:
+
+<pre class="prettyprint">
+$ curl -XPOST 'http://localhost:9200/_cluster/nodes/_local/_restart'
+</pre>
+
+p. Specific node(s) can be restarted as well using their respective node ids (or other selective options as explained "here":index.html.):
+
+<pre class="prettyprint">
+$ curl -XPOST 'http://localhost:9200/_cluster/nodes/nodeId1,nodeId2/_restart'
+</pre>
+
+p. The master (of the cluster) can also be restarted using:
+
+<pre class="prettyprint">
+$ curl -XPOST 'http://localhost:9200/_cluster/nodes/_master/_restart'
+</pre>
+
+p. Finally, all nodes can be restarted using one of the options below:
+
+<pre class="prettyprint">
+$ curl -XPOST 'http://localhost:9200/_cluster/nodes/_restart'
+
+$ curl -XPOST 'http://localhost:9200/_cluster/nodes/_all/_restart'
+</pre>
+
+h1. Restarting the JVM
+
+p. If you have launched Elasticsearch using the service wrapper, when a restart is requested, a full restart of the JVM is issued.
+
+h1. Known issue
+
+p. _restart API does not work under windows
