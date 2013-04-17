@@ -115,21 +115,21 @@ on your platform, let's say in `/home/elasticsearch/keys` dir.
 
 ```sh
 # Create a dir for your keys
-ssh -i azurePrivateKey.key elasticsearch@es-vm2.cloudapp.net 'mkdir /home/elasticsearch/keys'
+ssh -i azure-private.key elasticsearch@es-vm2.cloudapp.net 'mkdir /home/elasticsearch/keys'
 
 # Transform private key to PEM format
-openssl pkcs8 -topk8 -nocrypt -in azurePrivateKey.key -inform PEM -out azure.pem -outform PEM
+openssl pkcs8 -topk8 -nocrypt -in azure-private.key -inform PEM -out azure-pk.pem -outform PEM
 # Transform certificate to PEM format
-openssl x509 -inform der -in azureCert.cer -out azurecert.pem
+openssl x509 -inform der -in azure-certificate.cer -out azure-cert.pem
 
 # Copy your azure private key and certificate
-scp -i azurePrivateKey.key azure.pem azurecert.pem elasticsearch@es-vm2.cloudapp.net:/home/elasticsearch/keys
+scp -i azure-private.key azure-pk.pem azure-cert.pem elasticsearch@es-vm2.cloudapp.net:/home/elasticsearch/keys
 ```
 
 Connect with SSH to your VM:
 
 ```sh
-ssh -i azurePrivateKey.key elasticsearch@es-vm2.cloudapp.net
+ssh -i azure-private.key elasticsearch@es-vm2.cloudapp.net
 ```
 
 Install elasticsearch:
@@ -191,8 +191,8 @@ And add the following lines:
 ```yaml
     cloud:
         azure:
-            private_key: /home/elasticsearch/keys/azurePrivateKey.key
-            certificate: /home/elasticsearch/keys/azureCert.cer
+            private_key: /home/elasticsearch/keys/azure-pk.pem
+            certificate: /home/elasticsearch/keys/azure-cert.pem
             password: your_password
             subscription_id: your_azure_subscription_id
     discovery:
