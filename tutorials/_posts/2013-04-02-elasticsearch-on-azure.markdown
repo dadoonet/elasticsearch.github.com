@@ -231,3 +231,8 @@ logger:
   cloud: TRACE
 ```
 
+
+Batch it!
+Capture une instance (image disk).
+
+
